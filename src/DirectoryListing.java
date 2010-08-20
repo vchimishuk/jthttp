@@ -2,14 +2,24 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Directory listing page builder class.
  *
  */
 public class DirectoryListing {
+	private class FileComparator implements Comparator<File> {
+		@Override
+		public int compare(File a, File b) {
+			return a.getName().compareToIgnoreCase(b.getName());
+		}
+	}
+	
 	private Resource resource;
 	
 	public DirectoryListing(Resource resource) throws IllegalArgumentException {
@@ -50,8 +60,31 @@ public class DirectoryListing {
 		 * TODO: Sort files. Folders first.
 		 */
 		File directory = new File(resource.getPath());
+		List<File> direcories = new LinkedList<File>();
+		List<File> files = new LinkedList<File>();
+
+		/*
+		 * Sorting listing we do in next way:
+		 * 1. Split folder's items to two lists: directories and files.
+		 * 2. Than sort every independent lists.
+		 * 3. Join this two sorted lists into one, directories first.
+		 */
+		for (File file : directory.listFiles()) {
+			if (file.isDirectory()) {
+				direcories.add(file);
+			} else {
+				files.add(file);
+			}
+		}
+
+		Collections.sort(direcories, new FileComparator());
+		Collections.sort(files, new FileComparator());
 		
-		for (File item : directory.listFiles()) {
+		List<File> items = new LinkedList<File>();
+		items.addAll(direcories);
+		items.addAll(files);
+		
+		for (File item : items) {
 			String name = item.getName();
 			String lastMod = new SimpleDateFormat("dd-MMM-yyyy H:m").format(new Date(item.lastModified()));
 			String size = "-";
