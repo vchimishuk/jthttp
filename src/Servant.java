@@ -20,12 +20,8 @@ public class Servant {
 	
 	private Socket socket;
 	
-	private String docRoot;
-
-	
-	public Servant(Socket socket, String docRoot) {
+	public Servant(Socket socket) {
 		this.socket = socket;
-		this.docRoot = docRoot;
 		
 		logger = Logger.getLogger(Servant.class);
 	}
@@ -66,6 +62,7 @@ public class Servant {
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 			processRequest(request, writer);
 			writer.flush();
+			writer.close();
 		} catch (IOException e) {
 			logger.info("Communication with client failed.", e);
 		
@@ -85,10 +82,10 @@ public class Servant {
 	 */
 	private void processRequest(ClientRequest request, BufferedWriter writer) {
 		ServerResponse response = new ServerResponse();
-		File file = new File(docRoot + request.getUri());	// TODO: This is not secure, we can move up from the docRoot with '..' URI segments. 
+		Resource resource = new Resource(request.getUri());
 		
-		if (file.isDirectory()) {
-			response.setReader(getDirectoryListing(file));
+		if (resource.isDirectory()) {
+			response.setReader(getDirectoryListing(resource));
 		} else {
 			throw new RuntimeException("Retriving file content is not supported.");
 		}
@@ -96,10 +93,10 @@ public class Servant {
 		sendResponce(response, writer);
 	}
 	
-	private BufferedReader getDirectoryListing(File dir) {
-        String s = "This is the internal StringReader buffer.";
+	private BufferedReader getDirectoryListing(Resource resource) {
+        DirectoryListing dirListing = new DirectoryListing(resource);
 
-        return new BufferedReader(new StringReader(s));
+        return dirListing.getReader();
 	}
 	
 	/**

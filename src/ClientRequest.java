@@ -112,6 +112,7 @@ public class ClientRequest {
 
 	@Override
 	public String toString() {
-		return "ClientRequest [headers=" + headers + ", method=" + method + "]";
+		return "ClientRequest [headers=" + headers + ", method=" + method
+				+ ", protocolVersion=" + protocolVersion + ", uri=" + uri + "]";
 	}
 }

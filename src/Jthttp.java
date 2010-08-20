@@ -1,8 +1,6 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -27,11 +25,6 @@ public class Jthttp {
 	 * 
 	 */
 	private int maxThreadsCount;
-	
-	/**
-	 * Root folder for the server shared files.
-	 */
-	private String docRoot = "/"; // TODO: Make it more configurable.
 	
 	/**
 	 * Socket listened by server for incoming connections.
@@ -99,8 +92,9 @@ public class Jthttp {
 						clientSocket.getPort()));
 				
 				// TODO: Make it multithreading.
-				Servant servant = new Servant(clientSocket, docRoot);
+				Servant servant = new Servant(clientSocket);
 				servant.run();
+				clientSocket.close();
 			}
 		} catch (IOException e) {
 			logger.error("Listening failed.", e);
