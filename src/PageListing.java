@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.StringReader;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
@@ -103,7 +104,14 @@ public class PageListing extends Page {
 				size = FileSize.bytesToHuman(item.length());
 			}
 		
-			html.append("<a href=\"" + itemRes.getUri() + "\">" + name);
+			StringBuilder link = new StringBuilder();
+			link.append(resource.getUri());
+			if (!resource.getUri().equals("/")) {
+				link.append("/");
+			}
+			link.append(URLEncoder.encode(itemRes.getName()));
+			
+			html.append("<a href=\"" + link + "\">" + name);
 			html.append("</a>");
 			html.append(strRepeat(" ", Math.abs(24 - name.length())));
 			html.append(lastMod);
@@ -134,6 +142,10 @@ public class PageListing extends Page {
 	 * @return
 	 */
 	private String strRepeat(String str, int times) {
+		if (times == 0) {
+			return "";
+		}
+		
 		return String.format(String.format("%%0%dd", times), 0).replace("0", str);
 	}
 }

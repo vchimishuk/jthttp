@@ -7,7 +7,6 @@ import java.util.HashMap;
 /**
  * Resource (file or directory) representation class. 
  *
- * TODO: Encode not URI valid characters.
  */
 public class Resource implements Cloneable {
 	private static HashMap<String, String> mimeTypes;
@@ -963,6 +962,18 @@ public class Resource implements Cloneable {
 	 */
 	public String getPath() {
 		return rtrim(root) + uri;
+	}
+	
+	public String getName() {
+		Resource res = null;
+		
+		try {
+			res = this.clone();
+		} catch (CloneNotSupportedException e) {
+			// Leave it.
+		}
+		
+		return res.removeLastSegment();
 	}
 
 	/**

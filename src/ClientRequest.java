@@ -1,3 +1,4 @@
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -51,7 +52,7 @@ public class ClientRequest {
 			String m = matcher.group(1).toUpperCase(); // Parsed method.
 			if (m.equals("GET")) {
 				method = HttpMethod.GET;
-				uri = matcher.group(2);
+				uri = URLDecoder.decode(matcher.group(2));
 				protocolVersion = matcher.group(3);
 			} else {
 				throw new BadRequestException(String.format("Unsupported HTTP method '%s'",
