@@ -11,6 +11,10 @@ import org.apache.log4j.Logger;
  * @author Viacheslav Chumushuk
  * @date 18.08.2010
  */
+/*
+ * TODO: Add 400 page.
+ * TODO: Add 500 page.
+ */
 public class Jthttp {
 	private Logger logger;
 	

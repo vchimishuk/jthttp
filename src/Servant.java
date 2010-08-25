@@ -50,8 +50,8 @@ public class Servant {
 			try {
 				request = new ClientRequest(requestData);
 				logger.debug("Parsed request: " + request);
-			} catch (IllegalArgumentException e) {
-				// TODO: Show some error page here or do some other things in deal with RFC.
+			} catch (BadRequestException e) {
+				request = null;
 			}
 			
 			/*
@@ -79,26 +79,29 @@ public class Servant {
 	 * @param request
 	 */
 	private void processRequest(ClientRequest request, BufferedWriter writer) {
-		ServerResponse response = new ServerResponse();
-		Resource resource = new Resource(request.getUri());
-		Page page = PageFactory.getPage(resource);		
+		Page page;
 		
-		sendResponce(page, writer);
+		if (request == null) {
+			page = new Page400();
+		} else {
+			Resource resource = new Resource(request.getUri());
+			page = PageFactory.getPage(resource);
+		}
+		
+		try {
+			sendResponce(page, writer);
+		} catch (InternalErrorException e) {
+			page = new Page500();
+		}
 	}
-	
-	private BufferedReader getDirectoryListing(Resource resource) {
-        PageListing dirListing = new PageListing(resource);
 
-        return dirListing.getReader();
-	}
-	
 	/**
 	 * Write server's responce to the given output object.
 	 * 
 	 * @param responce
 	 * @param writer
 	 */
-	private void sendResponce(Page page, BufferedWriter writer) {
+	private void sendResponce(Page page, BufferedWriter writer) throws InternalErrorException {
 		try {
 			/*
 			 * Write some general headers.
@@ -135,7 +138,8 @@ public class Servant {
 	    	
 	    	 reader.close();
 		} catch (IOException e) {
-			// TODO: Handle and log it.
+			logger.error("IO error.", e);
+			throw new InternalErrorException();
 		}
 	}
 }

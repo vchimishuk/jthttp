@@ -28,10 +28,10 @@ public class ClientRequest {
 	 * 
 	 * @param request
 	 */
-	public ClientRequest(List<String> requestData) throws IllegalArgumentException {
+	public ClientRequest(List<String> requestData) throws BadRequestException {
 		try {
 			if (requestData.size() < 1) {
-				throw new IllegalArgumentException("Request is to short.");
+				throw new BadRequestException("Request is to short.");
 			}
 			
 			String line;
@@ -45,7 +45,7 @@ public class ClientRequest {
 			Matcher matcher = pattern.matcher(line);
 			
 			if (!matcher.matches()) {
-				throw new IllegalArgumentException();
+				throw new BadRequestException();
 			}
 			
 			String m = matcher.group(1).toUpperCase(); // Parsed method.
@@ -54,7 +54,7 @@ public class ClientRequest {
 				uri = matcher.group(2);
 				protocolVersion = matcher.group(3);
 			} else {
-				throw new IllegalArgumentException(String.format("Unsupported HTTP method '%s'",
+				throw new BadRequestException(String.format("Unsupported HTTP method '%s'",
 						matcher.group(1)));
 			}
 			
@@ -73,7 +73,7 @@ public class ClientRequest {
 			}
 			
 		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("Bad client request format. Request data: " + requestData.toString()
+			throw new BadRequestException("Bad client request format. Request data: " + requestData.toString()
 					+ " " + e.getMessage());
 		}
 	}

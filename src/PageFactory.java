@@ -3,19 +3,22 @@ public class PageFactory {
 	public static Page getPage(Resource resource) {
 		Page page;
 		
-		if (resource.isDirectory()) {
+		switch (resource.getType()) {
+		case FILE:
+			page = new PageFile(resource);
+			break;
+
+		case DIRECTORY:
 			page = new PageListing(resource);
-		} else {
+			break;
+			
+		case NOT_READABLE:
+			page = new Page403(resource);
+			break;
+			
+		default:
 			page = new Page404(resource);
-//			try {
-//				response.getHeaders().put("Content-Type", resource.getMimeType());
-//				response.setReader(resource.getReader());
-//			} catch (FileNotFoundException e) {
-//				logger.debug("File not found.", e);
-//				
-//				// TODO: Show 404 page here.
-//				throw new RuntimeException();
-//			}
+			break;
 		}
 		
 		return page;

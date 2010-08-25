@@ -1,5 +1,3 @@
-
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.StringReader;
@@ -7,14 +5,12 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Directory listing page builder class.
  * 
- * TODO: Make it inherited from the Page class.
  */
 public class PageListing extends Page {
 	private class FileComparator implements Comparator<File> {
@@ -29,7 +25,7 @@ public class PageListing extends Page {
 	public PageListing(Resource resource) throws IllegalArgumentException {
 		super(resource);
 		
-		if (!resource.isDirectory()) {
+		if (resource.getType() != ResourceType.DIRECTORY) {
 			throw new IllegalArgumentException("Resource should represents a folder");
 		}
 		
@@ -101,7 +97,7 @@ public class PageListing extends Page {
 				throw new RuntimeException(e);
 			}
 			
-			if (itemRes.isDirectory()) {
+			if (itemRes.getType() == ResourceType.DIRECTORY) {
 				name += "/";
 			} else {
 				size = FileSize.bytesToHuman(item.length());

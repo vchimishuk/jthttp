@@ -2,7 +2,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.StringReader;
 import java.util.HashMap;
 
 /**
@@ -839,11 +838,6 @@ public class Resource implements Cloneable {
 		setUri(uri);
 	}
 
-	/**
-	 * TODO: Check if URI is correct. Add slash at the beginning if we need.
-	 * 
-	 * @param uri
-	 */
 	public void setUri(String uri) {
 		if (uri == null) {
 			throw new NullPointerException("URI can't be null");
@@ -940,14 +934,26 @@ public class Resource implements Cloneable {
 	}
 	
 	/**
-	 * Returns true if the resource pointed to the folder.
+	 * Returns type of the resource.
 	 * 
 	 * @return
 	 */
-	public boolean isDirectory() {
-		String foo = rtrim(root) + uri;
+	public ResourceType getType() {
+		File file = new File(rtrim(root) + uri);
 		
-		return new File(rtrim(root) + uri).isDirectory();
+		if (!file.exists()) {
+			return ResourceType.NOT_EXISTS;
+		} else if (!file.canRead()) {
+			return ResourceType.NOT_READABLE;
+		} else if (file.isDirectory()) {
+			return ResourceType.DIRECTORY;
+		} else {
+			return ResourceType.FILE;
+		}
+	}
+	
+	public long getSize() {
+		return new File(rtrim(root) + uri).length();
 	}
 	
 	/**
