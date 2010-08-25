@@ -1,3 +1,5 @@
+
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.StringReader;
@@ -5,14 +7,16 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Directory listing page builder class.
- *
+ * 
+ * TODO: Make it inherited from the Page class.
  */
-public class DirectoryListing {
+public class PageListing extends Page {
 	private class FileComparator implements Comparator<File> {
 		@Override
 		public int compare(File a, File b) {
@@ -20,17 +24,22 @@ public class DirectoryListing {
 		}
 	}
 	
-	private Resource resource;
+	private String html;
 	
-	public DirectoryListing(Resource resource) throws IllegalArgumentException {
+	public PageListing(Resource resource) throws IllegalArgumentException {
+		super(resource);
+		
 		if (!resource.isDirectory()) {
 			throw new IllegalArgumentException("Resource should represents a folder");
 		}
-
-		this.resource = resource;
+		
+		html = getHtml();
+		
+		getHeaders().put("Content-Type", "text/html; charset=UTF-8");
+		getHeaders().put("Content-Length", String.format("%d", html.length()));
 	}
 	
-	public BufferedReader getReader() {
+	private String getHtml() {
 		StringBuilder html = new StringBuilder();
 		Resource parentRes;
 		
@@ -41,7 +50,6 @@ public class DirectoryListing {
 			throw new RuntimeException(e);
 		}
 		
-
 		html.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n");
 		html.append("<html>\n");
 		html.append("<head>\n");
@@ -54,21 +62,17 @@ public class DirectoryListing {
 		html.append("<hr>");
 		html.append("<a href=\"" + parentRes.getUri() + "\">Parent Directory</a>\n");
 		
-		/**
-		 * File listing.
-		 * 
-		 * TODO: Sort files. Folders first.
-		 */
-		File directory = new File(resource.getPath());
-		List<File> direcories = new LinkedList<File>();
-		List<File> files = new LinkedList<File>();
-
 		/*
+		 * File listing.
 		 * Sorting listing we do in next way:
 		 * 1. Split folder's items to two lists: directories and files.
 		 * 2. Than sort every independent lists.
 		 * 3. Join this two sorted lists into one, directories first.
 		 */
+		File directory = new File(resource.getPath());
+		List<File> direcories = new LinkedList<File>();
+		List<File> files = new LinkedList<File>();
+
 		for (File file : directory.listFiles()) {
 			if (file.isDirectory()) {
 				direcories.add(file);
@@ -117,7 +121,12 @@ public class DirectoryListing {
 		html.append("</body>\n");
 		html.append("</html>\n");
 		
-		return new BufferedReader(new StringReader(html.toString()));
+		return html.toString();
+	}
+	
+	@Override
+	public BufferedReader getReader() {
+		return new BufferedReader(new StringReader(html));
 	}
 
 	/**

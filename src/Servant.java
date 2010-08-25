@@ -1,15 +1,14 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.StringReader;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+
 
 /**
  * Client connection processing class.
@@ -51,7 +50,6 @@ public class Servant {
 			try {
 				request = new ClientRequest(requestData);
 				logger.debug("Parsed request: " + request);
-				
 			} catch (IllegalArgumentException e) {
 				// TODO: Show some error page here or do some other things in deal with RFC.
 			}
@@ -83,18 +81,13 @@ public class Servant {
 	private void processRequest(ClientRequest request, BufferedWriter writer) {
 		ServerResponse response = new ServerResponse();
 		Resource resource = new Resource(request.getUri());
+		Page page = PageFactory.getPage(resource);		
 		
-		if (resource.isDirectory()) {
-			response.setReader(getDirectoryListing(resource));
-		} else {
-			throw new RuntimeException("Retriving file content is not supported.");
-		}
-		
-		sendResponce(response, writer);
+		sendResponce(page, writer);
 	}
 	
 	private BufferedReader getDirectoryListing(Resource resource) {
-        DirectoryListing dirListing = new DirectoryListing(resource);
+        PageListing dirListing = new PageListing(resource);
 
         return dirListing.getReader();
 	}
@@ -105,23 +98,20 @@ public class Servant {
 	 * @param responce
 	 * @param writer
 	 */
-	private void sendResponce(ServerResponse response, BufferedWriter writer) {
+	private void sendResponce(Page page, BufferedWriter writer) {
 		try {
 			/*
 			 * Write some general headers.
 			 */
 			writer.write("HTTP/1.1 200 OK\r\n");
-	        writer.write("Server: Jthttp v0.0 \r\n");	// TODO: Make it configurable.
-	        writer.write("Content-Type: text/html\r\n");
-	        writer.write("Connection: close\r\n");
 	
 	        /*
 	         * Write request depends headers.
 	         */
-	        for (String key : response.getHeaders().keySet()) {
+	        for (String key : page.getHeaders().keySet()) {
 	        	writer.write(key);
 	        	writer.write(": ");
-	        	writer.write(response.getHeaders().get(key));
+	        	writer.write(page.getHeaders().get(key));
 	        	writer.write("\r\n");
 	        }
 	        
@@ -131,10 +121,11 @@ public class Servant {
 	    	/*
 	    	 * Copy data from the reader to the writer, -- send a request body.
 	    	 */
+	    	BufferedReader reader = page.getReader();
 	    	char[] buff = new char[512];
 	    	int readChars;
 	    	for (; ; ) {
-	    		readChars = response.getReader().read(buff, 0, 512);
+	    		readChars = reader.read(buff, 0, 512);
 	    		if (readChars <= 0) {
 	    			break;
 	    		}
@@ -142,7 +133,7 @@ public class Servant {
 	    		writer.write(buff, 0, readChars);
 	    	}
 	    	
-	    	response.getReader().close();
+	    	 reader.close();
 		} catch (IOException e) {
 			// TODO: Handle and log it.
 		}
