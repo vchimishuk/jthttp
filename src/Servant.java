@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
  * Client connection processing class.
  * 
  */
-public class Servant {
+public class Servant implements Runnable {
 	private Logger logger; 
 	
 	private Socket socket;
@@ -61,6 +61,8 @@ public class Servant {
 			processRequest(request, writer);
 			writer.flush();
 			writer.close();
+			
+			socket.close();
 		} catch (IOException e) {
 			logger.info("Communication with client failed.", e);
 		

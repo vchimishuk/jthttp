@@ -1,5 +1,5 @@
 Jthttp -- Primitive HTTP server written in Java with training purposes.
-This server use multithreading model with predefined threads pool.
+This server use multithreading model with creation one thread per request.
 
 Author: Viacheslav Chumushuk <voice@root.ua>, 2010
 

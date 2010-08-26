@@ -1,6 +1,8 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -15,49 +17,12 @@ public class Jthttp {
 	private Logger logger;
 	
 	/**
-	 * Port number listened by server for client's connections.
-	 * 
-	 */
-	private int port;
-	
-	/**
-	 * Maximum number of serving threads working in the same time.
-	 * 
-	 */
-	private int maxThreadsCount;
-	
-	/**
 	 * Socket listened by server for incoming connections.
 	 * 
 	 */
 	private ServerSocket socket;
-	/**
-	 * Default constructor.
-	 * 
-	 */
+
 	public Jthttp() {
-		this(80, 5);
-	}
-	
-	/**
-	 * Port based constructor.
-	 * 
-	 * @param port Port number for listening.
-	 */
-	public Jthttp(int port) {
-		this(port, 5);
-	}
-	
-	/**
-	 * Port number and threads count based constructor.
-	 * 
-	 * @param port Port number for the listening.
-	 * @param maxThreadsCount Maximum number of serving threads.
-	 */
-	public Jthttp(int port, int maxThreadsCount) {
-		this.port = port;
-		this.maxThreadsCount = maxThreadsCount;
-		
 		BasicConfigurator.configure();
 		logger = Logger.getLogger(Jthttp.class);
 	}
@@ -66,6 +31,8 @@ public class Jthttp {
 	 * Start server.
 	 */
 	public void start() {
+		int port = Configurations.getInstance().getInt("port");
+		
 		try {
 			socket = new ServerSocket(port);
 		} catch (IOException e) {
@@ -83,6 +50,8 @@ public class Jthttp {
 	 * 
 	 */
 	private void listen() {
+		ExecutorService executorService = Executors.newFixedThreadPool(Configurations.getInstance().getInt("threadsCount"));
+		
 		try {
 			for (; ; ) {
 				Socket clientSocket = socket.accept();
@@ -91,10 +60,7 @@ public class Jthttp {
 						clientSocket.getInetAddress().getHostAddress(),
 						clientSocket.getPort()));
 				
-				// TODO: Make it multithreading.
-				Servant servant = new Servant(clientSocket);
-				servant.run();
-				clientSocket.close();
+				executorService.execute(new Servant(clientSocket));
 			}
 		} catch (IOException e) {
 			logger.error("Listening failed.", e);
@@ -102,7 +68,7 @@ public class Jthttp {
 	}
 	
 	public static void main(String[] args) {
-		Jthttp jthttp = new Jthttp(8080);
+		Jthttp jthttp = new Jthttp();
 		
 		jthttp.start();
 	}

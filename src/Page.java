@@ -19,7 +19,7 @@ public abstract class Page {
 	public Page(Resource resource) {
 		this.resource = resource;
 		
-        headers.put("Server", "Jthttp v0.0");	// TODO: Make it configurable.
+        headers.put("Server", Configurations.getInstance().getString("version"));
         headers.put("Date", new SimpleDateFormat("EEE, dd MMM yyyy H:m:s Z").format(new Date()));
         headers.put("Connection", "close");
 	}
